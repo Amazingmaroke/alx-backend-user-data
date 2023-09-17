@@ -24,8 +24,13 @@ class Auth:
             return True
         if excluded_paths == [] or excluded_paths is None:
             return True
-        if path in excluded_paths or path + '/' in excluded_paths:
+        if path in \
+                excluded_paths or path + '/' in \
+                excluded_paths:
             return False
+        for ex_path in excluded_paths:
+            if path.startswith(ex_path[:-1]):
+                return False
 
         return True
 
