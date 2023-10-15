@@ -1,33 +1,38 @@
 #!/usr/bin/env python3
-""" encrypts password """
+
+"""
+hash passwords using bcrypt
+"""
 
 import bcrypt
-from bcrypt import hashpw, checkpw
 
 
 def hash_password(password: str) -> bytes:
-    """ Hash password function
-
-    Args:
-        password (str): password to encrypt
-
-    Returns:
-        str: encrypted password
     """
-    # encode password
-    encoded_pssw: bytes = password.encode()
-    encrypted: bytes = hashpw(encoded_pssw, bcrypt.gensalt())
-    return encrypted
-
-
-def is_valid(hashed_pssw: bytes, password: str) -> bool:
-    """ checks if password is encrypted
-
+    Hash a password
     Args:
-        hashed_pssw (bytes): hashed password
-        password (str): password
-
+        pwd (str): the password to hash
     Returns:
-        bool: true or false
+        returns a bytestring of the hashed pwd
+    Exceptions:
+        Raises TypeError if the pwd is not of type str
+    ------------------------------------------------
+    Example:
+        hash_password("MyAmazingPassw0rd")
+        # b'$2b$12$Fnjf6ew.oPZtVksngJjh1.vYCnxRjPm2yt18kw6AuprMRpmhJVxJO'
+        hash_password(1234)
+        # TypeError 1234 is not of type str
     """
-    return checkpw(password.encode(), hashed_pssw)
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+
+
+def is_valid(stored_pwd: bytes, input_pwd: str) -> bool:
+    """
+    validate user  passwords
+    Args:
+        input_pwd (str): the entered password
+        stored_pwd (str): password stored in the db
+    Returns:
+        return a bool
+    """
+    return bcrypt.checkpw(input_pwd.encode(), stored_pwd)

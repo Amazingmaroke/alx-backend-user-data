@@ -1,47 +1,21 @@
-## Personal Data in Python
+![img](https://assets.imaginablefutures.com/media/images/ALX_Logo.max-200x150.png)
 
-This repository contains code and documentation for working with personal data in Python. The code is organized into the following modules:
+![i dont always post](../memes/i-dont-always.png)
 
-* **[data](data/)**: Contains modules for loading, cleaning, and transforming personal data.
-* **[models](models/)**: Contains modules for building and training machine learning models on personal data.
-* **[visualization](visualization/)**: Contains modules for visualizing personal data and the results of machine learning models.
+## Resources
+__Read or watch__:
 
-The documentation for each module is located in the corresponding docstrings.
+- [What Is PII, non-PII, and Personal Data?](https://piwik.pro/blog/what-is-pii-personal-data/)
+- [logging documentation](https://docs.python.org/3/library/logging.html)
+- [bcrypt package](https://github.com/pyca/bcrypt/)
+- [Logging to Files, Setting Levels, and Formatting](https://www.youtube.com/watch?v=-ARI4Cz-awo)
 
-## Getting Started
+## Learning objectives
+By the end of this project, you are expected to be able to [explain to anyone](https://google.com/search?q=fenny+man+learning+technque) __Withought the help of Google__:
 
-To get started with this repository, you can clone it to your local machine using the following command:
 
-```
-git clone https://github.com/<username>/personal-data-in-python.git
-```
+- [X] Examples of Personally Identifiable Information (PII)
+- [X] How to implement a log filter that will obfuscate PII fields
+- [X] How to encrypt a password and check the validity of an input password
+- [x] How to authenticate to a database using environment variables
 
-Once you have cloned the repository, you can install the dependencies using the following command:
-
-```
-pip install -r requirements.txt
-```
-
-You can then load the data and train a model using the following code:
-
-```python
-import data
-import models
-
-# Load the data
-data = data.load_data()
-
-# Train the model
-model = models.train_model(data)
-
-# Evaluate the model
-models.evaluate_model(model, data)
-```
-
-## Contributing
-
-We welcome contributions to this repository. If you would like to contribute, please fork the repository and submit a pull request.
-
-## License
-
-This repository is licensed under the MIT License.

@@ -1,33 +1,20 @@
-**Personal User Data**
+![img](https://assets.imaginablefutures.com/media/images/ALX_Logo.max-200x150.png)
 
-This repository contains the data and code used to generate the results in the paper "Personal User Data: A Large-Scale Dataset for Understanding User Behavior". The data is available in the [data](data) directory, and the code is available in the [code](code) directory.
 
-## Data
 
-The data consists of two parts:
+![my-dataaaaa](https://media0.giphy.com/media/G1ifnX4d5tYFACktp9/200w.webp?cid=ecf05e473xp1amtn0qt0ws0l0suq2sh9lm28whpiw3xxfmb1&ep=v1_gifs_search&rid=200w.webp&ct=g)
 
-* **User logs:** This data contains information about user interactions with a mobile app, such as the time and date of the interaction, the type of interaction, and the device used.
-* **Personal information:** This data contains information about the users, such as their age, gender, and location.
 
-The data is available in a [CSV](https://en.wikipedia.org/wiki/Comma-separated_values) format. The user logs are in the [data/logs.csv](data/logs.csv) file, and the personal information is in the [data/personal_information.csv](data/personal_information.csv) file.
+## Backend User Data
+Handling Personally Identifiable Information (PII) in backend systems requires a strong focus on data privacy and security to ensure compliance with applicable laws and regulations, protect user data, and prevent unauthorized access. In this track, we will look at ways to  ensure the data is secure on the backend side of the application and that no unauthorized party has access to it. 
 
-## Code
+## What's inside
 
-The code used to generate the results in the paper is available in the [code](code) directory. The code is written in Python.
+[0x00](./0x00-personal_data): Personal Data
 
-## Usage
+[0x01](./0x01-Basic_authentication): Basic HTTP Authentication
 
-To use the data and code, you can follow the instructions in the [README](README.md) file in the [code](code) directory.
+[0x02](./0x02-Session_authentication): Session Based HTTP Authentication
 
-## Citation
+[0x03](./0x03-user_authentication_service): Authentication Service
 
-If you use the data or code in your research, please cite the following paper:
-
-```
-@article{user2023personal,
-  title={Personal User Data: A Large-Scale Dataset for Understanding User Behavior},
-  author={User, X. and User, Y. and User, Z.},
-  journal={arXiv preprint arXiv:2301.00001},
-  year={2023}
-}
-```

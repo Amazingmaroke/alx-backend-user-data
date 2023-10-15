@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 """
 Route module for the API
 """
@@ -13,39 +14,14 @@ app = Flask(__name__)
 app.register_blueprint(app_views)
 CORS(app, resources={r"/api/v1/*": {"origins": "*"}})
 auth = None
-AUTH_TYPE = getenv("AUTH_TYPE")
-
-if AUTH_TYPE == 'auth':
-    from api.v1.auth.auth import Auth
-    auth = Auth()
-
-elif AUTH_TYPE == 'basic_auth':
-    from api.v1.auth.basic_auth import BasicAuth
-    auth = BasicAuth()
-
-
-@app.before_request
-def before_req():
-    """ Before request handler
-    """
-    if auth is None:
-        pass
+auth = getenv('AUTH_TYPE')
+if auth:
+    if auth == "basic_auth":
+        from api.v1.auth.basic_auth import BasicAuth
+        auth = BasicAuth()
     else:
-        excluded = [
-            '/api/v1/status/', '/api/v1/unauthorized/',
-            '/api/v1/forbidden/']
-        if auth.require_auth(request.path, excluded):
-            if auth.authorization_header(request) is None:
-                abort(401, description="Unauthorized")
-            if auth.current_user(request) is None:
-                abort(403, description="Forbidden")
-
-
-@app.errorhandler(401)
-def unauthorized(error) -> str:
-    """ Not found handler
-    """
-    return jsonify({"error": "Unauthorized"}), 401
+        from api.v1.auth.auth import Auth
+        auth = Auth()
 
 
 @app.errorhandler(404)
@@ -55,11 +31,38 @@ def not_found(error) -> str:
     return jsonify({"error": "Not found"}), 404
 
 
+@app.errorhandler(401)
+def not_authorized(error) -> str:
+    """
+    Not authorized handler
+    """
+    return jsonify({"error": "Unauthorized"}), 401
+
+
 @app.errorhandler(403)
-def forbidden(error) -> str:
-    """ Forbidden handler
+def forbiden(error) -> str:
+    """
+    Forbidded reqeust handler
     """
     return jsonify({"error": "Forbidden"}), 403
+
+
+@app.before_request
+def authenticate_and_authorize():
+    """
+    Authenticate and authorize the client
+    before granting them access to a resource
+    This routine will be called on each request
+    to make our API secure
+    """
+    excluded_paths = ['/api/v1/status/',
+                      '/api/v1/unauthorized/', '/api/v1/forbidden/']
+    if auth:
+        if auth.require_auth(request.path, excluded_paths):
+            if not auth.authorization_header(request):
+                abort(401)
+            if not auth.current_user(request):
+                abort(403)
 
 
 if __name__ == "__main__":
