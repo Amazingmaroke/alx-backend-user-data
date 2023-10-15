@@ -1,66 +1,62 @@
 #!/usr/bin/env python3
 
 """
-This module hold the auth class
-to handle API authentication in our
-API system
+This module handles how users auth is being managed
 """
 
 from flask import request
-from typing import TypeVar, List
+from typing import List, TypeVar
 
 
 class Auth:
     """
-    A simple  auth class to handle
-    API authentication
+    User auth
     """
-
     def require_auth(self, path: str, excluded_paths: List[str]) -> bool:
         """
-        check if the  endpoint requires authentication
-        Args:
-            path (str):  endpoint to check
-            excluded_paths(list): a list of paths
-        Returns:
-            returns a boolean
-        -------------------------------------------
-        Example:
-            auth = Auth()
-            auth.require_auth("/api/private", []) # True
-            auth.require_auth("/api/public", []) # False
+        Handles path
+        :param path:
+        :param excluded_paths:
+        :return:
+            True if the path isnt in the excluded_path
+            False if it is
         """
-        if path is None:
+        if not path:
             return True
-
-        if excluded_paths is None or not excluded_paths:
+        if not excluded_paths or excluded_paths == []:
             return True
-
-        slash_path = path if path.endswith('/') else path + '/'
-        excluded_paths_with_slash = [p if p.endswith('/')
-                                     else p + '/' for p in excluded_paths]
-
-        return slash_path not in excluded_paths_with_slash
+        if path in excluded_paths:
+            return False
+        normalized_path = path.rstrip('/')  # Remove trailing slashes
+        for paths in excluded_paths:
+            # Remove trailing slashes
+            normalized_excluded_path = paths.rstrip('/')
+            if normalized_path == normalized_excluded_path:
+                return False
+            stripped = normalized_excluded_path.rstrip('*')
+            if normalized_excluded_path.endswith('*'):
+                if stripped == normalized_path:
+                    return False
+        return True
 
     def authorization_header(self, request=None) -> str:
         """
-        Get the authorization header from a http request
-        Args:
-            requests (dict): A reqeust object
-        Returns:
-            returns the Authorization header from
-            a http request
+        Authentication Header
+        :param request:
+        :return:
+            The Authentication header else None
         """
-        if request and request.headers.get("Authorization"):
-            return request.headers.get("Authorization")
+        if request is None:
+            return None
+        if 'Authorization' in request.headers:
+            return request.headers['Authorization']
         return None
 
     def current_user(self, request=None) -> TypeVar('User'):
         """
-        Get the current user
-        Args:
-            request (object): A HTTP request
-        Returns:
-            returns the current user
+        current user's info
+        :param request:
+        :return:
+            None
         """
         return None

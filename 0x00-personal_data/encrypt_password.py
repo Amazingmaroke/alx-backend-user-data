@@ -1,38 +1,30 @@
 #!/usr/bin/env python3
-
-"""
-hash passwords using bcrypt
-"""
-
+"""Contains a function for generating hashed passwords"""
 import bcrypt
 
 
 def hash_password(password: str) -> bytes:
     """
-    Hash a password
-    Args:
-        pwd (str): the password to hash
-    Returns:
-        returns a bytestring of the hashed pwd
-    Exceptions:
-        Raises TypeError if the pwd is not of type str
-    ------------------------------------------------
-    Example:
-        hash_password("MyAmazingPassw0rd")
-        # b'$2b$12$Fnjf6ew.oPZtVksngJjh1.vYCnxRjPm2yt18kw6AuprMRpmhJVxJO'
-        hash_password(1234)
-        # TypeError 1234 is not of type str
+    Generates a hashed password
+    :return:
+            A salted hashed password
     """
-    return bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+    # Encode the password to bytes since bcrypt.hashpw requires
+    # a byte and the salted
+    encoded = password.encode('utf-8')
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(encoded, salt)
+    return hashed
 
 
-def is_valid(stored_pwd: bytes, input_pwd: str) -> bool:
+def is_valid(hashed_password: bytes, password: str) -> bool:
     """
-    validate user  passwords
-    Args:
-        input_pwd (str): the entered password
-        stored_pwd (str): password stored in the db
-    Returns:
-        return a bool
+    :param hashed_password:
+    :param password:
+    :return:
+        TRue or False
     """
-    return bcrypt.checkpw(input_pwd.encode(), stored_pwd)
+    encoded = password.encode("utf-8")
+    if bcrypt.checkpw(encoded, hashed_password):
+        return True
+    return False

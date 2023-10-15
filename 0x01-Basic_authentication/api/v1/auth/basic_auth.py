@@ -1,138 +1,110 @@
 #!/usr/bin/env python3
 
-"""
-Basic Auth
-this module provides the basic auth class
-for HTTP authorization
-"""
-
-from .auth import Auth
-from base64 import b64decode
-import re
+"""Contains a BasicAuth class that inherits from auth"""
+import base64
+import binascii
 from typing import TypeVar
+
+from api.v1.auth.auth import Auth
+from models.base import Base
 from models.user import User
 
 
 class BasicAuth(Auth):
     """
     Basic Auth class
-    for Basic HTTP authorization
     """
-    @staticmethod
-    def is_valid_basic_header(auth_header: str) -> str:
-        """
-        A simple function to validate headers
-        Args:
-            auth_header (str): string to validate against
-        Returns:
-            returns a boolean
-        Example
-            is_valid_header("Basic aXRzZm9zczppdHNmb3NzCg==")
-            # True
-            is_valid_header("Not a valid input")
-            # False
-        """
-        pattern = r'^Basic [a-zA-Z0-9\-]*'
-        return re.match(pattern, auth_header) is not None
 
     def extract_base64_authorization_header(self,
                                             authorization_header: str) -> str:
+        """Extracts Base 64 from Authorization header for Basic Authentication.
+        :param authorization_header: The Authorization header string.
+        :return: The Base 64 part of the header,
+         or None if it doesn't meet the criteria.
         """
-        extract the base64  from the header
-        Args:
-            authorization_header(str): the header in reference
-        Returns:
-            returns a string (base64)
-        """
-        if not authorization_header or not\
-                isinstance(authorization_header, str):
+        if not authorization_header:
             return None
-        if not BasicAuth.is_valid_basic_header(authorization_header):
+        if not isinstance(authorization_header, str):
             return None
-        return authorization_header.split(" ")[1]
+        parts = authorization_header.split()
+        if len(parts) == 2 and parts[0] == 'Basic':
+            return parts[1]
+        return None
 
-    def decode_base64_authorization_header(self,
-                                           base64_authorization_header:
-                                           str) -> str:
+    def decode_base64_authorization_header(
+            self, base64_authorization_header: str) -> str:
         """
-        decode the base64 string after extracting it
-        Args:
-            base64_authorization_header(str): string to decode
-        Returns:
-            returns a utf-8 string
+        Decoded value
+        :param base64_authorization_header: value to be decoded
+        :return: None if base64_authorization_header is None
+        if base64_authorization_header is not a string
+            None if base64_authorization_header is not a valid Base64
         """
-        if not base64_authorization_header or not isinstance(
-                    base64_authorization_header, str):
+        if not base64_authorization_header:
+            return None
+        if not isinstance(base64_authorization_header, str):
             return None
         try:
-            return (b64decode(base64_authorization_header).decode('utf-8'))
-        except Exception as e:
+            decoded_header = base64.b64decode(base64_authorization_header)
+            return decoded_header.decode('utf-8')
+            if decoded_header:
+                return decoded_header.decode('utf-8')
+            return None
+        except binascii.Error:
             return None
 
-    def extract_user_credentials(self, decoded_header: str) -> (str, str):
+    def extract_user_credentials(
+            self, decoded_base64_authorization_header: str) -> (str, str):
         """
-        extract user credentials from the decode string
-        Args:
-            decoded_header (str): the decoded base64
-        Returns:
-            returns a tuple (str, str)
-        -----------------------------------------------
-        Example:
-            auth = BasicAuth()
-            creds: str = auth.extract_user_credentials("john: doe")
-            # ('john', 'doe')
+        extract user credentials
+        :param decoded_base64_authorization_header:
+        :return:
+        None, None if decoded_base64_authorization_header is None
+        None, None if decoded_base64_authorization_header is not a string
+        None, None if decoded_base64_authorization_header doesn’t contain
         """
-        if not decoded_header or not isinstance(decoded_header, str):
-            return (None, None)
-        last_colon_index = decoded_header.rfind(":")
-        if last_colon_index != -1:
-            username = decoded_header[:last_colon_index]
-            password = decoded_header[last_colon_index + 1:]
-            return (username, password)
-        return (None, None)
+        if not decoded_base64_authorization_header:
+            return None, None
+        if not isinstance(decoded_base64_authorization_header, str):
+            return None, None
+        if ':' in decoded_base64_authorization_header:
+            splited = decoded_base64_authorization_header.split(":", 1)
+            # print(splited)
+            return splited[0], splited[-1]
+        return None, None
 
     def user_object_from_credentials(
-        self,
-        user_email: str,
-            user_pwd: str) -> TypeVar('User'):
+            self, user_email: str, user_pwd: str) -> TypeVar('User'):
+        """-
+        Handles user's credentials
+        :param user_email: user's email which is a string
+        :param user_pwd: user's password which is a string
+        :return:  None if user_email is None or not a string
+        None if user_pwd is None or not a string
         """
-        get the user object from the credentials
-        Args:
-            user_email (str): the username
-            user_pwd  (str): the password
-        Returns:
-            returns a object  of the User class
-        """
-        if not user_email or not user_pwd or not isinstance(user_email, str)\
-                or not isinstance(user_pwd, str):
+        if not isinstance(user_email, str):
+            return None
+        if not isinstance(user_pwd, str):
             return None
         try:
-            users = User.search({"email": user_email})
-            if not users or users == []:
-                return None
-            for user in users:
-                if user.is_valid_password(user_pwd):
-                    return user
+            user = User.search({"email": user_email})
         except Exception as e:
             return None
+        if len(user) <= 0:
+            return None
+        user = user[0]
+        if user.is_valid_password(user_pwd):
+            return user
+        return None
 
     def current_user(self, request=None) -> TypeVar('User'):
         """
-        Get the current user
-        Args:
-            request (str): The HTTP request in question
-        Returns:
-            returns a user object
+        Overload current_user - and BOOM!
+        :param request: HTTP request made
+        :return:
         """
         auth_header = self.authorization_header(request)
-        if auth_header is not None:
-            token = self.extract_base64_authorization_header(auth_header)
-            if token is not None:
-                decoded = self.decode_base64_authorization_header(token)
-                if decoded is not None:
-                    email, password = self.extract_user_credentials(decoded)
-                    if email is not None:
-                        return self.user_object_from_credentials(
-                            email, password)
-
-        return
+        b64_auth_token = self.extract_base64_authorization_header(auth_header)
+        auth_token = self.decode_base64_authorization_header(b64_auth_token)
+        email, password = self.extract_user_credentials(auth_token)
+        return self.user_object_from_credentials(email, password)

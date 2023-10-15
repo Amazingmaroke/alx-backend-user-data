@@ -2,14 +2,14 @@
 
 """DB module
 """
+
+
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
-from sqlalchemy.exc import InvalidRequestError
 from sqlalchemy.orm.exc import NoResultFound
-
-from user import (User, Base)
+from sqlalchemy.exc import InvalidRequestError
+from user import Base, User
 
 
 class DB:
@@ -34,61 +34,49 @@ class DB:
         return self.__session
 
     def add_user(self, email: str, hashed_password: str) -> User:
-        """"
-        Add a user to the session for persistene
-        Args:
-            email (str): user email
-            hashed_pwd (str): Hashed password
-        Returns:
-            returns the user object
         """
-        # session = Session(bind=self._engine)
-        user_creds = {
-            "email": email,
-            "hashed_password": hashed_password
-        }
-        user = User(**user_creds)
-        # user = User(email=email, hashed_password=hashed_password)
-        self._session.add(user)
+        Adds a new user to the database
+        :param email: user's email address
+        :param hashed_password: user's hashed pwd
+        :return:
+            User obj
+        """
+        user_dict = {"email": email,
+                     "hashed_password": hashed_password}
+        user_obj = User(**user_dict)
+        self._session.add(user_obj)
         self._session.commit()
-        return user
+        return user_obj
 
-    def find_user_by(self, **filters) -> User:
+    def find_user_by(self, **kwargs) -> User:
         """
-        Query for a user, filter the response and return
-        The first object
-        Args:
-            filters (dict): filters to use when filtering
-        Returns:
-            returns an object of the User class
-        Raises:
-            Raises NoResultFound if no result is found
-            InvalidRequestError otherwise
+        Queries the database and returns the match if found
+        :param kwargs: Arbitrary args
+        :return:
+            Value of the kwargs passed
         """
-        if filters:
-            user = self._session.query(User).filter_by(**filters).first()
-            if user:
-                return user
+        if not kwargs:
+            raise InvalidRequestError
+        user = self._session.query(User).filter_by(**kwargs)
+        query = user.first()
+        if not query:
             raise NoResultFound
-        raise InvalidRequestError
+        return query
 
     def update_user(self, user_id: int, **kwargs) -> None:
         """
-        Update a user
-        Args:
-            user_id (int): The user to update
-            kwargs (dict): New user properties
-        Returns:
-            Returns None (expclicity)
+        Updates a user's detail
+        :param user_id: user_id of the user to be updated
+        :param kwargs: Arbitrary args
+        :return:
+            The updated user object
         """
-        search_params = {
-            "id": user_id
-        }
-        user_to_update = self.find_user_by(**search_params)
+        user_to_update = self.find_user_by(id=user_id)
+        if not user_to_update:
+            return
         for key, value in kwargs.items():
-            if not hasattr(user_to_update, key):
+            if hasattr(user_to_update, key):
+                setattr(user_to_update, key, value)
+            else:
                 raise ValueError
-            setattr(user_to_update, key, value)
-
         self._session.commit()
-        return
